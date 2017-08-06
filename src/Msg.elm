@@ -1,9 +1,10 @@
 module Msg exposing (..)
 
 import Model exposing (Direction)
+import Keyboard exposing (KeyCode)
 
 
 type Msg
-    = Move Direction
-    | NewGame
-    | ChangeSize
+    = NewGame Int
+    | ChangeSize Int
+    | HandleKey KeyCode

@@ -1,0 +1,6 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    "elm.makeSpecialFile": "src/Main.elm",
+    "elm.makeOutput": "build/Main.html",
+    "elm.formatOnSave": true
+}

@@ -1,7 +1,8 @@
 module View exposing (view)
 
-import Html exposing (Html, div, text)
-import Html.Attributes exposing (style)
+import Html exposing (Html, div, text, input, button)
+import Html.Attributes exposing (style, type_, value)
+import Html.Events exposing (onClick, onInput)
 import Array exposing (Array)
 import Model exposing (..)
 import Msg exposing (..)
@@ -34,7 +35,12 @@ cellStyle =
 
 view : Model -> Html Msg
 view model =
-    div [ style [ ( "width", toPx (cellSize * model.size) ) ] ] (cells model.cells)
+    div []
+        [ div [ style [ ( "width", toPx (cellSize * model.size) ) ] ] (cells model.cells)
+        , text "Seed"
+        , input [ onInput UpdateSeed, type_ "number", value <| toString model.seed ] []
+        , button [ onClick (NewGame model.size) ] [ text "new" ]
+        ]
 
 
 cells : Array Cell -> List (Html Msg)

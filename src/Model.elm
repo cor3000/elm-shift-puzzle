@@ -1,6 +1,8 @@
 module Model exposing (..)
 
 import Array exposing (Array)
+import Random
+import Debug
 
 
 type Direction
@@ -8,6 +10,21 @@ type Direction
     | Down
     | Left
     | Right
+
+
+toDirection num =
+    case num of
+        0 ->
+            Right
+
+        1 ->
+            Up
+
+        2 ->
+            Left
+
+        _ ->
+            Down
 
 
 type Cell
@@ -21,13 +38,14 @@ type alias Position =
 
 type alias Model =
     { size : Int
+    , seed : Int
     , cells : Array Cell
     , currentPos : ( Int, Int )
     }
 
 
-init : Int -> Model
-init size =
+init : Int -> Int -> Model
+init size seed =
     let
         numParts =
             size ^ 2 - 1
@@ -38,6 +56,7 @@ init size =
                 |> Array.push Empty
         , currentPos = ( size - 1, size - 1 )
         , size = size
+        , seed = seed
         }
 
 
@@ -60,34 +79,58 @@ move dir model =
 
                 Right ->
                     ( x + 1, y )
-
-        maybeCell =
-            cellAt nextPos model
     in
-        case maybeCell of
-            Just cell ->
-                { model
-                    | currentPos = nextPos
-                    , cells =
-                        model.cells
-                            |> Array.set (toIndex ( x, y ) model) cell
-                            |> Array.set (toIndex nextPos model) Empty
-                }
-
-            Nothing ->
-                model
-
-
-cellAt : Position -> Model -> Maybe Cell
-cellAt ( x, y ) model =
-    let
-        insideField =
-            x >= 0 && x < model.size && y >= 0 && y < model.size
-    in
-        if insideField then
-            Array.get (toIndex ( x, y ) model) model.cells
+        if (insideField nextPos model.size) then
+            { model
+                | currentPos = nextPos
+                , cells = swapCells (toIndex model.currentPos model) (toIndex nextPos model) model.cells
+            }
         else
-            Nothing
+            model
+
+
+shuffle : Int -> Model -> Model
+shuffle numMoves model =
+    let
+        intListGenerator =
+            Random.list numMoves (Random.int 0 3)
+
+        ( intList, nextSeed ) =
+            Random.step intListGenerator (Random.initialSeed model.seed)
+
+        dirList =
+            List.map toDirection intList
+    in
+        List.foldl move model dirList
+
+
+updateSeed : Int -> Model -> Model
+updateSeed seed model =
+    { model | seed = seed }
+
+
+swapCells : Int -> Int -> Array Cell -> Array Cell
+swapCells index1 index2 cells =
+    let
+        maybeCell1 =
+            Array.get index1 cells
+
+        maybeCell2 =
+            Array.get index2 cells
+    in
+        case ( maybeCell1, maybeCell2 ) of
+            ( Just cell1, Just cell2 ) ->
+                cells
+                    |> Array.set index1 cell2
+                    |> Array.set index2 cell1
+
+            ( _, _ ) ->
+                cells
+
+
+insideField : Position -> Int -> Bool
+insideField ( x, y ) size =
+    x >= 0 && x < size && y >= 0 && y < size
 
 
 toIndex : Position -> Model -> Int

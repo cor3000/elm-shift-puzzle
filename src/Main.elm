@@ -1,13 +1,11 @@
 module Main exposing (..)
 
 import Html exposing (..)
-import Debug exposing (log)
-import Array
-import View exposing (view)
+import Keyboard
+import Result exposing (Result(..))
 import Msg exposing (..)
 import Model exposing (..)
-import Maybe
-import Keyboard
+import View exposing (view)
 
 
 main : Program Never Model Msg
@@ -24,7 +22,15 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NewGame size ->
-            ( Model.init size, Cmd.none )
+            ( Model.init size model.seed |> Model.shuffle 1000, Cmd.none )
+
+        UpdateSeed value ->
+            case String.toInt value of
+                Ok seed ->
+                    ( Model.updateSeed seed model, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
 
         HandleKey key ->
             case key of
@@ -43,13 +49,6 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        unhandled ->
-            let
-                _ =
-                    log "unhandled Msg" msg
-            in
-                ( model, Cmd.none )
-
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -60,4 +59,4 @@ subscriptions model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model.init 4, Cmd.none )
+    ( Model.init 4 0, Cmd.none )

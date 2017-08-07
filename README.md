@@ -1,2 +1,2 @@
 # elm-shift-puzzle
-stud exercise while learning elm
+study exercise while learning elm

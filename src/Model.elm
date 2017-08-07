@@ -44,6 +44,12 @@ type alias Model =
     }
 
 
+startGame : Model -> Model
+startGame model =
+    init model.size model.seed
+        |> shuffle 1000
+
+
 init : Int -> Int -> Model
 init size seed =
     let
@@ -58,6 +64,26 @@ init size seed =
         , size = size
         , seed = seed
         }
+
+
+shuffle : Int -> Model -> Model
+shuffle numMoves model =
+    let
+        intListGenerator =
+            Random.list numMoves (Random.int 0 3)
+
+        ( intList, nextSeed ) =
+            Random.step intListGenerator (Random.initialSeed model.seed)
+
+        dirList =
+            List.map toDirection intList
+    in
+        List.foldl move model dirList
+
+
+updateSeed : Int -> Model -> Model
+updateSeed seed model =
+    { model | seed = seed }
 
 
 move : Direction -> Model -> Model
@@ -87,26 +113,6 @@ move dir model =
             }
         else
             model
-
-
-shuffle : Int -> Model -> Model
-shuffle numMoves model =
-    let
-        intListGenerator =
-            Random.list numMoves (Random.int 0 3)
-
-        ( intList, nextSeed ) =
-            Random.step intListGenerator (Random.initialSeed model.seed)
-
-        dirList =
-            List.map toDirection intList
-    in
-        List.foldl move model dirList
-
-
-updateSeed : Int -> Model -> Model
-updateSeed seed model =
-    { model | seed = seed }
 
 
 swapCells : Int -> Int -> Array Cell -> Array Cell

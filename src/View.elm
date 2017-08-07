@@ -10,7 +10,7 @@ import Msg exposing (..)
 
 cellSize : number
 cellSize =
-    120
+    150
 
 
 toPx : number -> String
@@ -28,7 +28,7 @@ cellStyle =
     , ( "height", toPx cellSize )
     , ( "backgroundColor", "Teal" )
     , ( "color", "White" )
-    , ( "borderRadius", toPx 5 )
+    , ( "borderRadius", toPx (cellSize * 0.1) )
     , ( "border", "1px solid White" )
     ]
 
@@ -37,9 +37,9 @@ view : Model -> Html Msg
 view model =
     div []
         [ div [ style [ ( "width", toPx (cellSize * model.size) ) ] ] (cells model.cells)
-        , text "Seed"
+        , text "Seed: "
         , input [ onInput UpdateSeed, type_ "number", value <| toString model.seed ] []
-        , button [ onClick (NewGame model.size) ] [ text "new" ]
+        , button [ onClick StartGame ] [ text "start" ]
         ]
 
 

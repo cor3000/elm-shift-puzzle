@@ -4,6 +4,6 @@ import Keyboard exposing (KeyCode)
 
 
 type Msg
-    = NewGame Int
+    = StartGame
     | UpdateSeed String
     | HandleKey KeyCode

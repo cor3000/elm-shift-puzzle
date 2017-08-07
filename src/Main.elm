@@ -21,8 +21,8 @@ main =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NewGame size ->
-            ( Model.init size model.seed |> Model.shuffle 1000, Cmd.none )
+        StartGame ->
+            ( Model.startGame model, Cmd.none )
 
         UpdateSeed value ->
             case String.toInt value of
@@ -46,8 +46,21 @@ update msg model =
                 40 ->
                     ( Model.move Down model, Cmd.none )
 
-                _ ->
-                    ( model, Cmd.none )
+                13 ->
+                    ( Model.startGame model, Cmd.none )
+
+                33 ->
+                    ( Model.updateSeed (model.seed + 1) model, Cmd.none )
+
+                34 ->
+                    ( Model.updateSeed (model.seed - 1) model, Cmd.none )
+
+                k ->
+                    let
+                        unused =
+                            Debug.log "unhandled keydown: " k
+                    in
+                        ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

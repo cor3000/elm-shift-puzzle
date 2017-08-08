@@ -1,16 +1,13 @@
 module View exposing (view)
 
-import Html exposing (Html, div, text, input, button)
+import Html exposing (Html, body, div, text, input, button)
 import Html.Attributes exposing (style, type_, value)
 import Html.Events exposing (onClick, onInput)
+import Html.CssHelpers exposing (stylesheetLink)
 import Array exposing (Array)
 import Model exposing (..)
 import Msg exposing (..)
-
-
-cellSize : number
-cellSize =
-    120
+import PuzzleCss exposing (..)
 
 
 toPx : number -> String
@@ -18,26 +15,15 @@ toPx num =
     toString num ++ "px"
 
 
-cellStyle : List ( String, String )
-cellStyle =
-    [ ( "display", "inline-block" )
-    , ( "boxSizing", "border-box" )
-    , ( "width", toPx cellSize )
-    , ( "height", toPx cellSize )
-    , ( "lineHeight", toPx cellSize )
-    , ( "fontSize", toPx (cellSize * 0.7) )
-    , ( "textAlign", "center" )
-    , ( "backgroundColor", "Teal" )
-    , ( "color", "White" )
-    , ( "borderRadius", toPx (cellSize * 0.1) )
-    , ( "border", "1px solid White" )
-    ]
+{ id, class, classList } =
+    PuzzleCss.helpers
 
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ div [ style [ ( "width", toPx (cellSize * model.size) ) ] ] (cells model.cells)
+    body []
+        [ stylesheetLink "/build/index.css"
+        , div [ style [ ( "width", toPx (cellSize * model.size) ) ] ] (cells model.cells)
         , text "Seed: "
         , input [ onInput UpdateSeed, type_ "number", value <| toString model.seed ] []
         , button [ onClick StartGame ] [ text "start" ]
@@ -46,14 +32,21 @@ view model =
 
 cells : Array Cell -> List (Html Msg)
 cells cells =
-    List.map cell (Array.toList cells)
+    Array.indexedMap cell cells
+        |> Array.toList
 
 
-cell : Cell -> Html Msg
-cell cell =
+cell : Int -> Cell -> Html Msg
+cell index cell =
     case cell of
         Part number ->
-            div [ style cellStyle ] [ text (number + 1 |> toString) ]
+            div
+                [ classList
+                    [ ( PuzzleCss.Cell, True )
+                    , ( PuzzleCss.CellCorrect, number == index )
+                    ]
+                ]
+                [ text (number + 1 |> toString) ]
 
         Empty ->
-            div [ style <| List.append cellStyle [ ( "backgroundColor", "white" ) ] ] [ text " . " ]
+            div [ class [ PuzzleCss.Cell, PuzzleCss.CellEmpty ] ] [ text "😒" ]

@@ -2,7 +2,6 @@ module Model exposing (..)
 
 import Array exposing (Array)
 import Random
-import Debug
 
 
 type Direction
@@ -12,6 +11,7 @@ type Direction
     | Right
 
 
+toDirection : number -> Direction
 toDirection num =
     case num of
         0 ->
@@ -40,7 +40,7 @@ type alias Model =
     { size : Int
     , seed : Int
     , cells : Array Cell
-    , currentPos : ( Int, Int )
+    , currentPos : Position
     }
 
 

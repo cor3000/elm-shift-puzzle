@@ -10,7 +10,7 @@ import Msg exposing (..)
 
 cellSize : number
 cellSize =
-    150
+    120
 
 
 toPx : number -> String
@@ -23,9 +23,10 @@ cellStyle =
     [ ( "display", "inline-block" )
     , ( "boxSizing", "border-box" )
     , ( "width", toPx cellSize )
+    , ( "height", toPx cellSize )
+    , ( "lineHeight", toPx cellSize )
     , ( "fontSize", toPx (cellSize * 0.7) )
     , ( "textAlign", "center" )
-    , ( "height", toPx cellSize )
     , ( "backgroundColor", "Teal" )
     , ( "color", "White" )
     , ( "borderRadius", toPx (cellSize * 0.1) )

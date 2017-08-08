@@ -11,9 +11,9 @@ type Direction
     | Right
 
 
-toDirection : number -> Direction
+toDirection : Int -> Direction
 toDirection num =
-    case num of
+    case (num % 4) of
         0 ->
             Right
 
@@ -69,14 +69,13 @@ init size seed =
 shuffle : Int -> Model -> Model
 shuffle numMoves model =
     let
-        intListGenerator =
-            Random.list numMoves (Random.int 0 3)
+        dirListGenerator =
+            Random.int 0 3
+                |> Random.map toDirection
+                |> Random.list numMoves
 
-        ( intList, nextSeed ) =
-            Random.step intListGenerator (Random.initialSeed model.seed)
-
-        dirList =
-            List.map toDirection intList
+        ( dirList, nextSeed ) =
+            Random.step dirListGenerator (Random.initialSeed model.seed)
     in
         List.foldl move model dirList
 

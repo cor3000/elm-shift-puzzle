@@ -1,4 +1,4 @@
-module PuzzleCss exposing (..)
+module Styles.PuzzleCss exposing (..)
 
 import Css exposing (..)
 import Css.Colors exposing (..)

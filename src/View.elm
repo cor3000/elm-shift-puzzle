@@ -1,13 +1,23 @@
 module View exposing (view)
 
-import Html exposing (Html, body, div, text, input, button)
+import Html exposing (Html, div, text, input, button)
 import Html.Attributes exposing (style, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Html.CssHelpers exposing (stylesheetLink)
+import Html.CssHelpers
+import Css
+import Debug
 import Array exposing (Array)
 import Model exposing (..)
 import Msg exposing (..)
-import PuzzleCss exposing (..)
+import Styles.PuzzleCss as PuzzleCss
+
+
+compiledStyles =
+    Css.compile [ PuzzleCss.css ]
+
+
+debug =
+    Debug.log "CSS Compile Warnings" compiledStyles.warnings
 
 
 toPx : number -> String
@@ -21,9 +31,9 @@ toPx num =
 
 view : Model -> Html Msg
 view model =
-    body []
-        [ stylesheetLink "/build/index.css"
-        , div [ style [ ( "width", toPx (cellSize * model.size) ) ] ] (cells model.cells)
+    div []
+        [ Html.CssHelpers.style compiledStyles.css
+        , div [ style [ ( "width", toPx (PuzzleCss.cellSize * model.size) ) ] ] (cells model.cells)
         , text "Seed: "
         , input [ onInput UpdateSeed, type_ "number", value <| toString model.seed ] []
         , button [ onClick StartGame ] [ text "start" ]

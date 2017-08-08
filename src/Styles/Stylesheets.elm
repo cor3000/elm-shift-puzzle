@@ -1,7 +1,7 @@
-port module Stylesheets exposing (..)
+port module Styles.Stylesheets exposing (..)
 
 import Css.File exposing (CssFileStructure, CssCompilerProgram)
-import PuzzleCss
+import Styles.PuzzleCss
 
 
 port files : CssFileStructure -> Cmd msg
@@ -10,7 +10,7 @@ port files : CssFileStructure -> Cmd msg
 fileStructure : CssFileStructure
 fileStructure =
     Css.File.toFileStructure
-        [ ( "build/index.css", Css.File.compile [ PuzzleCss.css ] ) ]
+        [ ( "build/index.css", Css.File.compile [ Styles.PuzzleCss.css ] ) ]
 
 
 main : CssCompilerProgram

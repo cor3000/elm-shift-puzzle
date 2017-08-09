@@ -27,13 +27,8 @@ update msg model =
         AbortGame ->
             ( Model.init model.size model.seed, Cmd.none )
 
-        UpdateSeed res ->
-            case res of
-                Ok seed ->
-                    ( Model.updateSeed seed model, Cmd.none )
-
-                Err _ ->
-                    ( model, Cmd.none )
+        UpdateSeed seed ->
+            ( Model.updateSeed seed model, Cmd.none )
 
         HandleKey key ->
             case key of
@@ -56,10 +51,10 @@ update msg model =
                     update Msg.AbortGame model
 
                 33 ->
-                    update (Msg.UpdateSeed <| Ok (model.seed + 1)) model
+                    update (Msg.UpdateSeed (model.seed + 1)) model
 
                 34 ->
-                    update (Msg.UpdateSeed <| Ok (model.seed - 1)) model
+                    update (Msg.UpdateSeed (model.seed - 1)) model
 
                 k ->
                     let

@@ -50,7 +50,7 @@ css =
         , class Field
             [ width (vmin 80)
             , height (vmin 80)
-            , margin2 zero auto
+            , margin4 (vmin 2) auto zero auto
             ]
         , class Cell
             [ display inlineBlock

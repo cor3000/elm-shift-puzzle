@@ -1,7 +1,7 @@
 module View exposing (view)
 
-import Html exposing (Html, div, text, input, button)
-import Html.Attributes exposing (style, type_, value)
+import Html exposing (Html, div, text, input, button, label)
+import Html.Attributes as Attr exposing (style, type_, value, rel, href)
 import Html.Events exposing (onClick, onInput)
 import Html.CssHelpers
 import Css
@@ -31,15 +31,34 @@ toPx num =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ Html.CssHelpers.style compiledStyles.css
+    div [ Attr.class "container" ]
+        [ Html.node "link"
+            [ Attr.rel "stylesheet"
+            , Attr.href "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+            ]
+            []
+        , Html.CssHelpers.style compiledStyles.css
         , div
             [ class [ PuzzleCss.Field ]
             ]
             (cells model)
-        , text "Seed: "
-        , input [ onInput (String.toInt >> UpdateSeed), type_ "number", value (toString model.seed) ] []
-        , button [ onClick StartGame ] [ text "start" ]
+        , div [ Attr.class "form-group row" ]
+            [ div [ Attr.class "col-3" ] []
+            , label [ Attr.for "seedInput", Attr.class "col-2 col-form-label" ]
+                [ text "Seed: " ]
+            , input
+                [ Attr.class "col-2 form-control"
+                , onInput (String.toInt >> Result.withDefault 0 >> UpdateSeed)
+                , type_ "number"
+                , value (toString model.seed)
+                ]
+                []
+            , button
+                [ Attr.class "btn btn-primary col-2"
+                , onClick StartGame
+                ]
+                [ text "Start" ]
+            ]
         ]
 
 

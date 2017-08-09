@@ -33,7 +33,10 @@ view : Model -> Html Msg
 view model =
     div []
         [ Html.CssHelpers.style compiledStyles.css
-        , div [ style [ ( "width", toPx (PuzzleCss.cellSize * model.size) ) ] ] (cells model)
+        , div
+            [ class [ PuzzleCss.Field ]
+            ]
+            (cells model)
         , text "Seed: "
         , input [ onInput UpdateSeed, type_ "number", value <| toString model.seed ] []
         , button [ onClick StartGame ] [ text "start" ]
@@ -65,8 +68,8 @@ cell gameStatus index cell =
 
         Empty ->
             div [ class [ PuzzleCss.Cell, PuzzleCss.CellEmpty ] ]
-                [ if gameStatus == Solved then
-                    (text "😀")
-                  else
+                [ if gameStatus == InGame then
                     (text "😒")
+                  else
+                    (text "😀")
                 ]

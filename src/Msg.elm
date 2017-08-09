@@ -5,5 +5,6 @@ import Keyboard exposing (KeyCode)
 
 type Msg
     = StartGame
-    | UpdateSeed String
+    | AbortGame
+    | UpdateSeed (Result String Int)
     | HandleKey KeyCode

@@ -24,8 +24,11 @@ update msg model =
         StartGame ->
             ( Model.startGame model, Cmd.none )
 
-        UpdateSeed value ->
-            case String.toInt value of
+        AbortGame ->
+            ( Model.init model.size model.seed, Cmd.none )
+
+        UpdateSeed res ->
+            case res of
                 Ok seed ->
                     ( Model.updateSeed seed model, Cmd.none )
 
@@ -47,13 +50,16 @@ update msg model =
                     ( Model.move Down model, Cmd.none )
 
                 13 ->
-                    ( Model.startGame model, Cmd.none )
+                    update Msg.StartGame model
+
+                27 ->
+                    update Msg.AbortGame model
 
                 33 ->
-                    ( Model.updateSeed (model.seed + 1) model, Cmd.none )
+                    update (Msg.UpdateSeed <| Ok (model.seed + 1)) model
 
                 34 ->
-                    ( Model.updateSeed (model.seed - 1) model, Cmd.none )
+                    update (Msg.UpdateSeed <| Ok (model.seed - 1)) model
 
                 k ->
                     let

@@ -38,7 +38,7 @@ view model =
             ]
             (cells model)
         , text "Seed: "
-        , input [ onInput UpdateSeed, type_ "number", value <| toString model.seed ] []
+        , input [ onInput (String.toInt >> UpdateSeed), type_ "number", value (toString model.seed) ] []
         , button [ onClick StartGame ] [ text "start" ]
         ]
 

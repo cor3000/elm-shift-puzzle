@@ -64,31 +64,49 @@ view model =
 
 cells : Model -> List (Html Msg)
 cells model =
+    Array.indexedMap (cell model) model.cells
+        |> Array.toList
+
+
+cell : Model -> Int -> Cell -> Html Msg
+cell model index cell =
     let
-        cellWithGameStatus : Int -> Cell -> Html Msg
-        cellWithGameStatus =
-            cell model.gameStatus
+        scale =
+            100.0 / toFloat model.size
+
+        ( x, y ) =
+            toPosition index model
+
+        posStyles =
+            styles
+                [ Css.top (Css.pct <| toFloat y * scale)
+                , Css.left (Css.pct <| toFloat x * scale)
+                ]
     in
-        Array.indexedMap cellWithGameStatus model.cells
-            |> Array.toList
-
-
-cell : GameStatus -> Int -> Cell -> Html Msg
-cell gameStatus index cell =
-    case cell of
-        Part number ->
-            div
-                [ classList
-                    [ ( PuzzleCss.Cell, True )
-                    , ( PuzzleCss.CellCorrect, number == index )
+        case cell of
+            Part number ->
+                div
+                    [ posStyles
+                    , classList
+                        [ ( PuzzleCss.Cell, True )
+                        , ( PuzzleCss.CellCorrect, number == index )
+                        ]
                     ]
-                ]
-                [ text (number + 1 |> toString) ]
+                    [ text (number + 1 |> toString) ]
 
-        Empty ->
-            div [ class [ PuzzleCss.Cell, PuzzleCss.CellEmpty ] ]
-                [ if gameStatus == InGame then
-                    (text "😒")
-                  else
-                    (text "😀")
-                ]
+            Empty ->
+                div
+                    [ posStyles
+                    , class [ PuzzleCss.Cell, PuzzleCss.CellEmpty ]
+                    ]
+                    [ text <|
+                        if model.gameStatus == InGame then
+                            "😒"
+                        else
+                            "😀"
+                    ]
+
+
+styles : List Css.Style -> Html.Attribute msg
+styles =
+    Css.asPairs >> Attr.style

@@ -50,11 +50,13 @@ css =
         , class Field
             [ width (vmin 80)
             , height (vmin 80)
-            , margin4 (vmin 2) auto zero auto
+            , margin2 zero auto
+            , position relative
             ]
         , class Cell
             [ display inlineBlock
             , boxSizing borderBox
+            , position absolute
             , margin (pct 1)
             , width (pct 23)
             , height (pct 23)

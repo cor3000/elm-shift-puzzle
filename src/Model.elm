@@ -175,3 +175,8 @@ insideField ( x, y ) size =
 toIndex : Position -> Model -> Int
 toIndex ( x, y ) model =
     y * model.size + x
+
+
+toPosition : Int -> Model -> Position
+toPosition index model =
+    ( index % model.size, index // model.size )

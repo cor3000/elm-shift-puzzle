@@ -33,21 +33,26 @@ view : Model -> Html Msg
 view model =
     div []
         [ Html.CssHelpers.style compiledStyles.css
-        , div [ style [ ( "width", toPx (PuzzleCss.cellSize * model.size) ) ] ] (cells model.cells)
+        , div [ style [ ( "width", toPx (PuzzleCss.cellSize * model.size) ) ] ] (cells model)
         , text "Seed: "
         , input [ onInput UpdateSeed, type_ "number", value <| toString model.seed ] []
         , button [ onClick StartGame ] [ text "start" ]
         ]
 
 
-cells : Array Cell -> List (Html Msg)
-cells cells =
-    Array.indexedMap cell cells
-        |> Array.toList
+cells : Model -> List (Html Msg)
+cells model =
+    let
+        cellWithGameStatus : Int -> Cell -> Html Msg
+        cellWithGameStatus =
+            cell model.gameStatus
+    in
+        Array.indexedMap cellWithGameStatus model.cells
+            |> Array.toList
 
 
-cell : Int -> Cell -> Html Msg
-cell index cell =
+cell : GameStatus -> Int -> Cell -> Html Msg
+cell gameStatus index cell =
     case cell of
         Part number ->
             div
@@ -59,4 +64,9 @@ cell index cell =
                 [ text (number + 1 |> toString) ]
 
         Empty ->
-            div [ class [ PuzzleCss.Cell, PuzzleCss.CellEmpty ] ] [ text "😒" ]
+            div [ class [ PuzzleCss.Cell, PuzzleCss.CellEmpty ] ]
+                [ if gameStatus == Solved then
+                    (text "😀")
+                  else
+                    (text "😒")
+                ]

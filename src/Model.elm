@@ -32,6 +32,13 @@ type Cell
     | Part Int
 
 
+type GameStatus
+    = Initial
+    | Solved
+    | Shuffling
+    | InGame
+
+
 type alias Position =
     ( Int, Int )
 
@@ -41,13 +48,21 @@ type alias Model =
     , seed : Int
     , cells : Array Cell
     , currentPos : Position
+    , gameStatus : GameStatus
     }
 
 
 startGame : Model -> Model
 startGame model =
     init model.size model.seed
+        |> setGameStatus Shuffling
         |> shuffle 1000
+        |> setGameStatus InGame
+
+
+setGameStatus : GameStatus -> Model -> Model
+setGameStatus gameStatus model =
+    { model | gameStatus = gameStatus }
 
 
 init : Int -> Int -> Model
@@ -63,6 +78,7 @@ init size seed =
         , currentPos = ( size - 1, size - 1 )
         , size = size
         , seed = seed
+        , gameStatus = Initial
         }
 
 
@@ -105,11 +121,29 @@ move dir model =
                 Right ->
                     ( x + 1, y )
     in
-        if (insideField nextPos model.size) then
+        if ((model.gameStatus == InGame || model.gameStatus == Shuffling) && insideField nextPos model.size) then
             { model
                 | currentPos = nextPos
                 , cells = swapCells (toIndex model.currentPos model) (toIndex nextPos model) model.cells
             }
+                |> recalculateGameStatus
+        else
+            model
+
+
+recalculateGameStatus : Model -> Model
+recalculateGameStatus model =
+    let
+        solved : Bool
+        solved =
+            List.map2
+                (\cellInitial cellCurrent -> cellInitial == cellCurrent)
+                (model.cells |> Array.toList)
+                (init model.size model.seed |> .cells |> Array.toList)
+                |> List.all (\isCorrect -> isCorrect)
+    in
+        if model.gameStatus == InGame && solved then
+            setGameStatus Solved model
         else
             model
 

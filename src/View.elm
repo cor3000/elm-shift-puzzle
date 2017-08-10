@@ -1,7 +1,7 @@
 module View exposing (view)
 
 import Html exposing (Html, div, text, input, button, label)
-import Html.Attributes as Attr exposing (style, type_, value, rel, href)
+import Html.Attributes exposing (class, style, type_, value, rel, href, for)
 import Html.Events exposing (onClick, onInput)
 import Html.CssHelpers
 import Css
@@ -12,12 +12,17 @@ import Msg exposing (..)
 import Styles.PuzzleCss as PuzzleCss
 
 
+debug =
+    Debug.log "CSS Compile Warnings" compiledStyles.warnings
+
+
 compiledStyles =
     Css.compile [ PuzzleCss.css ]
 
 
-debug =
-    Debug.log "CSS Compile Warnings" compiledStyles.warnings
+css : Html.CssHelpers.Namespace String class id msg
+css =
+    PuzzleCss.helpers
 
 
 toPx : number -> String
@@ -25,36 +30,32 @@ toPx num =
     toString num ++ "px"
 
 
-{ id, class, classList } =
-    PuzzleCss.helpers
-
-
 view : Model -> Html Msg
 view model =
-    div [ Attr.class "container" ]
+    div [ class "container" ]
         [ Html.node "link"
-            [ Attr.rel "stylesheet"
-            , Attr.href "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+            [ rel "stylesheet"
+            , href "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
             ]
             []
         , Html.CssHelpers.style compiledStyles.css
         , div
-            [ class [ PuzzleCss.Field ]
+            [ css.class [ PuzzleCss.Field ]
             ]
             (cells model)
-        , div [ Attr.class "form-group row" ]
-            [ div [ Attr.class "col-3" ] []
-            , label [ Attr.for "seedInput", Attr.class "col-2 col-form-label" ]
+        , div [ class "form-group row" ]
+            [ div [ class "col-3" ] []
+            , label [ for "seedInput", class "col-2 col-form-label" ]
                 [ text "Seed: " ]
             , input
-                [ Attr.class "col-2 form-control"
+                [ class "col-2 form-control"
                 , onInput (String.toInt >> Result.withDefault 0 >> UpdateSeed)
                 , type_ "number"
                 , value (toString model.seed)
                 ]
                 []
             , button
-                [ Attr.class "btn btn-primary col-2"
+                [ class "btn btn-primary col-2"
                 , onClick StartGame
                 ]
                 [ text "Start" ]
@@ -87,7 +88,7 @@ cell model index cell =
             Part number ->
                 div
                     [ posStyles
-                    , classList
+                    , css.classList
                         [ ( PuzzleCss.Cell, True )
                         , ( PuzzleCss.CellCorrect, number == index )
                         ]
@@ -97,7 +98,7 @@ cell model index cell =
             Empty ->
                 div
                     [ posStyles
-                    , class [ PuzzleCss.Cell, PuzzleCss.CellEmpty ]
+                    , css.class [ PuzzleCss.Cell, PuzzleCss.CellEmpty ]
                     ]
                     [ text <|
                         if model.gameStatus == InGame then
@@ -109,4 +110,4 @@ cell model index cell =
 
 styles : List Css.Style -> Html.Attribute msg
 styles =
-    Css.asPairs >> Attr.style
+    Css.asPairs >> style

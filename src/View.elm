@@ -42,7 +42,7 @@ view model =
         , div
             [ css.class [ PuzzleCss.Field ]
             ]
-            (cells model)
+            (Array.map (cell model) model.cells |> Array.toList)
         , div [ class "form-group row" ]
             [ div [ class "col-3" ] []
             , label [ for "seedInput", class "col-2 col-form-label" ]
@@ -63,20 +63,14 @@ view model =
         ]
 
 
-cells : Model -> List (Html Msg)
-cells model =
-    Array.indexedMap (cell model) model.cells
-        |> Array.toList
-
-
-cell : Model -> Int -> Cell -> Html Msg
-cell model index cell =
+cell : Model -> Cell -> Html Msg
+cell model cell =
     let
         scale =
             100.0 / toFloat model.size
 
         ( x, y ) =
-            toPosition index model
+            cell.pos
 
         posStyles =
             styles
@@ -84,16 +78,16 @@ cell model index cell =
                 , Css.left (Css.pct <| toFloat x * scale)
                 ]
     in
-        case cell of
-            Part number ->
+        case cell.part of
+            Number num ->
                 div
                     [ posStyles
                     , css.classList
                         [ ( PuzzleCss.Cell, True )
-                        , ( PuzzleCss.CellCorrect, number == index )
+                        , ( PuzzleCss.CellCorrect, cell.pos == cell.origin )
                         ]
                     ]
-                    [ text (number + 1 |> toString) ]
+                    [ text (toString num) ]
 
             Empty ->
                 div

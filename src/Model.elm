@@ -27,9 +27,17 @@ toDirection num =
             Down
 
 
-type Cell
+type Part
     = Empty
-    | Part Int
+    | Number Int
+
+
+type alias Cell =
+    { index : Int
+    , part : Part
+    , origin : Position
+    , pos : Position
+    }
 
 
 type GameStatus
@@ -70,16 +78,31 @@ init size seed =
     let
         numParts =
             size ^ 2 - 1
+
+        bottomRight =
+            ( size - 1, size - 1 )
+
+        emptyCell =
+            Cell numParts Empty bottomRight bottomRight
     in
         { cells =
             Array.initialize numParts identity
-                |> Array.map (\index -> Part index)
-                |> Array.push Empty
-        , currentPos = ( size - 1, size - 1 )
+                |> Array.map (partCellFrom size)
+                |> Array.push emptyCell
+        , currentPos = bottomRight
         , size = size
         , seed = seed
         , gameStatus = Initial
         }
+
+
+partCellFrom : Int -> Int -> Cell
+partCellFrom size index =
+    let
+        pos =
+            toPosition size index
+    in
+        Cell index (Number (index + 1)) pos pos
 
 
 shuffle : Int -> Model -> Model
@@ -107,6 +130,7 @@ move dir model =
         ( x, y ) =
             model.currentPos
 
+        nextPos : Position
         nextPos =
             case dir of
                 Up ->
@@ -121,11 +145,8 @@ move dir model =
                 Right ->
                     ( x + 1, y )
     in
-        if ((model.gameStatus == InGame || model.gameStatus == Shuffling) && insideField nextPos model.size) then
-            { model
-                | currentPos = nextPos
-                , cells = swapCells (toIndex model.currentPos model) (toIndex nextPos model) model.cells
-            }
+        if ((model.gameStatus == InGame || model.gameStatus == Shuffling) && insideField model.size nextPos) then
+            updateMove nextPos model
                 |> recalculateGameStatus
         else
             model
@@ -140,7 +161,7 @@ recalculateGameStatus model =
                 (\cellInitial cellCurrent -> cellInitial == cellCurrent)
                 (model.cells |> Array.toList)
                 (init model.size model.seed |> .cells |> Array.toList)
-                |> List.all (\isCorrect -> isCorrect)
+                |> List.all identity
     in
         if model.gameStatus == InGame && solved then
             setGameStatus Solved model
@@ -148,35 +169,56 @@ recalculateGameStatus model =
             model
 
 
-swapCells : Int -> Int -> Array Cell -> Array Cell
-swapCells index1 index2 cells =
+updateMove : Position -> Model -> Model
+updateMove nextPos model =
     let
-        maybeCell1 =
-            Array.get index1 cells
+        currentCell : Maybe Cell
+        currentCell =
+            cellAtPosition model model.currentPos
 
-        maybeCell2 =
-            Array.get index2 cells
+        nextCell : Maybe Cell
+        nextCell =
+            cellAtPosition model nextPos
     in
-        case ( maybeCell1, maybeCell2 ) of
-            ( Just cell1, Just cell2 ) ->
-                cells
-                    |> Array.set index1 cell2
-                    |> Array.set index2 cell1
+        swapPositions currentCell nextCell model.cells
+            |> Maybe.map
+                (\cells ->
+                    { model
+                        | currentPos = nextPos
+                        , cells = cells
+                    }
+                )
+            |> Maybe.withDefault model
 
-            ( _, _ ) ->
-                cells
+
+swapPositions : Maybe Cell -> Maybe Cell -> Array Cell -> Maybe (Array Cell)
+swapPositions cell1 cell2 cells =
+    Maybe.map2
+        (\cell1 cell2 ->
+            cells
+                |> Array.set cell1.index { cell1 | pos = cell2.pos }
+                |> Array.set cell2.index { cell2 | pos = cell1.pos }
+        )
+        cell1
+        cell2
 
 
-insideField : Position -> Int -> Bool
-insideField ( x, y ) size =
+insideField : Int -> Position -> Bool
+insideField size ( x, y ) =
     x >= 0 && x < size && y >= 0 && y < size
 
 
-toIndex : Position -> Model -> Int
-toIndex ( x, y ) model =
-    y * model.size + x
+cellAtPosition : Model -> Position -> Maybe Cell
+cellAtPosition model pos =
+    Array.filter (\cell -> cell.pos == pos) model.cells
+        |> Array.get 0
 
 
-toPosition : Int -> Model -> Position
-toPosition index model =
-    ( index % model.size, index // model.size )
+toIndex : Int -> Position -> Int
+toIndex size ( x, y ) =
+    y * size + x
+
+
+toPosition : Int -> Int -> Position
+toPosition size index =
+    ( index % size, index // size )

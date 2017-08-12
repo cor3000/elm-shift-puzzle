@@ -66,13 +66,19 @@ css =
             , backgroundColor gray
             , color silver
             , borderRadius (px (cellSize * 0.1))
+            , transition [ "left 0.1s linear", "top 0.1s ease-out" ]
             ]
         , class CellCorrect
             [ backgroundColor orange
             , color yellow
             ]
         , class CellEmpty
-            [ backgroundColor puzzleBackgroundColor
+            [ backgroundColor transparent
             , color gray
             ]
         ]
+
+
+transition : List String -> Style
+transition properties =
+    property "transition" <| String.join "," properties

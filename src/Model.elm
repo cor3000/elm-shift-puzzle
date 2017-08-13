@@ -57,6 +57,7 @@ type alias Model =
     , cells : Array Cell
     , currentPos : Position
     , gameStatus : GameStatus
+    , numMoves : Int
     }
 
 
@@ -66,6 +67,7 @@ startGame model =
         |> setGameStatus Shuffling
         |> shuffle 1000
         |> setGameStatus InGame
+        |> (\model -> { model | numMoves = 0 })
 
 
 setGameStatus : GameStatus -> Model -> Model
@@ -93,6 +95,7 @@ init size seed =
         , size = size
         , seed = seed
         , gameStatus = Initial
+        , numMoves = 0
         }
 
 
@@ -174,11 +177,11 @@ updateMove nextPos model =
     let
         currentCell : Maybe Cell
         currentCell =
-            cellAtPosition model model.currentPos
+            cellAtPosition model.currentPos model
 
         nextCell : Maybe Cell
         nextCell =
-            cellAtPosition model nextPos
+            cellAtPosition nextPos model
     in
         swapPositions currentCell nextCell model.cells
             |> Maybe.map
@@ -186,6 +189,7 @@ updateMove nextPos model =
                     { model
                         | currentPos = nextPos
                         , cells = cells
+                        , numMoves = (model.numMoves + 1)
                     }
                 )
             |> Maybe.withDefault model
@@ -208,15 +212,10 @@ insideField size ( x, y ) =
     x >= 0 && x < size && y >= 0 && y < size
 
 
-cellAtPosition : Model -> Position -> Maybe Cell
-cellAtPosition model pos =
-    Array.filter (\cell -> cell.pos == pos) model.cells
+cellAtPosition : Position -> Model -> Maybe Cell
+cellAtPosition pos model =
+    Array.filter (.pos >> (==) pos) model.cells
         |> Array.get 0
-
-
-toIndex : Int -> Position -> Int
-toIndex size ( x, y ) =
-    y * size + x
 
 
 toPosition : Int -> Int -> Position

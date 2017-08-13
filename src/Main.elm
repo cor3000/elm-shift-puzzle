@@ -2,7 +2,6 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Keyboard
-import Result exposing (Result(..))
 import Msg exposing (..)
 import Model exposing (..)
 import View exposing (view)
@@ -30,38 +29,36 @@ update msg model =
         UpdateSeed seed ->
             ( Model.updateSeed seed model, Cmd.none )
 
-        HandleKey key ->
-            case key of
-                37 ->
-                    ( Model.move Left model, Cmd.none )
+        HandleKey 37 ->
+            ( Model.move Left model, Cmd.none )
 
-                38 ->
-                    ( Model.move Up model, Cmd.none )
+        HandleKey 38 ->
+            ( Model.move Up model, Cmd.none )
 
-                39 ->
-                    ( Model.move Right model, Cmd.none )
+        HandleKey 39 ->
+            ( Model.move Right model, Cmd.none )
 
-                40 ->
-                    ( Model.move Down model, Cmd.none )
+        HandleKey 40 ->
+            ( Model.move Down model, Cmd.none )
 
-                13 ->
-                    update Msg.StartGame model
+        HandleKey 13 ->
+            update Msg.StartGame model
 
-                27 ->
-                    update Msg.AbortGame model
+        HandleKey 27 ->
+            update Msg.AbortGame model
 
-                33 ->
-                    update (Msg.UpdateSeed (model.seed + 1)) model
+        HandleKey 33 ->
+            update (Msg.UpdateSeed (model.seed + 1)) model
 
-                34 ->
-                    update (Msg.UpdateSeed (model.seed - 1)) model
+        HandleKey 34 ->
+            update (Msg.UpdateSeed (model.seed - 1)) model
 
-                k ->
-                    let
-                        unused =
-                            Debug.log "unhandled keydown: " k
-                    in
-                        ( model, Cmd.none )
+        HandleKey k ->
+            let
+                unused =
+                    Debug.log "unhandled keydown: " k
+            in
+                ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

@@ -1,7 +1,7 @@
 module View exposing (view)
 
 import Html exposing (Html, div, text, input, button, label)
-import Html.Attributes exposing (class, style, type_, value, rel, href, for)
+import Html.Attributes exposing (id, class, style, type_, value, rel, href, for)
 import Html.Events exposing (onClick, onInput)
 import Html.CssHelpers
 import Css
@@ -32,33 +32,34 @@ toPx num =
 
 view : Model -> Html Msg
 view model =
-    div [ class "container" ]
+    div [ css.class [ PuzzleCss.Wrapper ] ]
         [ Html.node "link"
             [ rel "stylesheet"
             , href "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
             ]
             []
         , Html.CssHelpers.style compiledStyles.css
-        , div
-            [ css.class [ PuzzleCss.Field ]
-            ]
-            (Array.map (cell model) model.cells |> Array.toList)
-        , div [ class "form-group row" ]
-            [ div [ class "col-3" ] []
-            , label [ for "seedInput", class "col-2 col-form-label" ]
+        , div [ css.class [ PuzzleCss.Sidebar ] ]
+            [ label [ for "seedInput", class "col-form-label" ]
                 [ text "Seed: " ]
             , input
-                [ class "col-2 form-control"
-                , onInput (String.toInt >> Result.withDefault 0 >> UpdateSeed)
+                [ id "seedInput"
+                , class "form-control"
                 , type_ "number"
                 , value (toString model.seed)
+                , onInput (String.toInt >> Result.withDefault 0 >> UpdateSeed)
                 ]
                 []
-            , button
-                [ class "btn btn-primary col-2"
-                , onClick StartGame
-                ]
+            , button [ class "btn btn-primary", onClick StartGame ]
                 [ text "Start" ]
+            , div []
+                [ label [ for "seedInput", class "col-form-label" ]
+                    [ text ("Moves: " ++ (toString model.numMoves)) ]
+                ]
+            ]
+        , div [ css.class [ PuzzleCss.Content ] ]
+            [ div [ css.class [ PuzzleCss.Field ] ]
+                (Array.map (cell model) model.cells |> Array.toList)
             ]
         ]
 

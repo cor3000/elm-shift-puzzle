@@ -8,15 +8,13 @@ import Html.CssHelpers
 
 
 type CssClasses
-    = Cell
+    = Wrapper
+    | Sidebar
+    | Content
+    | Field
+    | Cell
     | CellEmpty
     | CellCorrect
-    | Field
-
-
-cellSize : number
-cellSize =
-    120
 
 
 white : Color
@@ -39,6 +37,11 @@ helpers =
     Html.CssHelpers.withNamespace puzzleNamespace
 
 
+transition : List String -> Style
+transition properties =
+    property "transition" <| String.join "," properties
+
+
 css : Stylesheet
 css =
     (stylesheet << namespace puzzleNamespace)
@@ -47,10 +50,24 @@ css =
             , color white
             , fontFamily sansSerif
             ]
+        , class Wrapper
+            [ displayFlex
+            , width (pct 100)
+            ]
+        , class Sidebar
+            [ display inlineBlock
+            , flex none
+            , width (px 200)
+            ]
+        , class Content
+            [ flex (int 1)
+            , position relative
+            ]
         , class Field
-            [ width (vmin 80)
+            [ display inlineBlock
+            , width (vmin 80)
             , height (vmin 80)
-            , margin2 zero auto
+            , margin2 zero (px 20)
             , position relative
             ]
         , class Cell
@@ -65,8 +82,8 @@ css =
             , textAlign center
             , backgroundColor gray
             , color silver
-            , borderRadius (px (cellSize * 0.1))
-            , transition [ "left 0.1s linear", "top 0.1s ease-out" ]
+            , borderRadius (pct 5)
+            , transition [ "left 0.1s ease-out", "top 0.1s ease-out" ]
             ]
         , class CellCorrect
             [ backgroundColor orange
@@ -77,8 +94,3 @@ css =
             , color gray
             ]
         ]
-
-
-transition : List String -> Style
-transition properties =
-    property "transition" <| String.join "," properties

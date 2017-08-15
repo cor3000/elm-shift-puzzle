@@ -7,4 +7,5 @@ type Msg
     = StartGame
     | AbortGame
     | UpdateSeed Int
+    | InvertControls Bool
     | HandleKey KeyCode

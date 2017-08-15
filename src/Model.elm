@@ -55,6 +55,7 @@ type alias Model =
     { size : Int
     , seed : Int
     , cells : Array Cell
+    , invertControls : Bool
     , currentPos : Position
     , gameStatus : GameStatus
     , numMoves : Int
@@ -96,6 +97,7 @@ init size seed =
         , seed = seed
         , gameStatus = Initial
         , numMoves = 0
+        , invertControls = False
         }
 
 
@@ -127,26 +129,37 @@ updateSeed seed model =
     { model | seed = seed }
 
 
+updateInvertControls : Bool -> Model -> Model
+updateInvertControls invertControls model =
+    { model | invertControls = invertControls }
+
+
 move : Direction -> Model -> Model
 move dir model =
     let
         ( x, y ) =
             model.currentPos
 
+        invertFactor =
+            if model.invertControls then
+                -1
+            else
+                1
+
         nextPos : Position
         nextPos =
             case dir of
                 Up ->
-                    ( x, y - 1 )
+                    ( x, y - 1 * invertFactor )
 
                 Down ->
-                    ( x, y + 1 )
+                    ( x, y + 1 * invertFactor )
 
                 Left ->
-                    ( x - 1, y )
+                    ( x - 1 * invertFactor, y )
 
                 Right ->
-                    ( x + 1, y )
+                    ( x + 1 * invertFactor, y )
     in
         if ((model.gameStatus == InGame || model.gameStatus == Shuffling) && insideField model.size nextPos) then
             updateMove nextPos model

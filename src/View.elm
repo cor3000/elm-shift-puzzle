@@ -1,8 +1,8 @@
 module View exposing (view)
 
-import Html exposing (Html, div, text, input, button, label)
-import Html.Attributes exposing (id, class, style, type_, value, rel, href, for)
-import Html.Events exposing (onClick, onInput)
+import Html exposing (Html, div, span, text, input, button, label)
+import Html.Attributes exposing (id, class, style, type_, value, rel, href, for, checked)
+import Html.Events exposing (onClick, onInput, onCheck)
 import Html.CssHelpers
 import Css
 import Debug
@@ -40,21 +40,45 @@ view model =
             []
         , Html.CssHelpers.style compiledStyles.css
         , div [ css.class [ PuzzleCss.Sidebar ] ]
-            [ label [ for "seedInput", class "col-form-label" ]
-                [ text "Seed: " ]
-            , input
-                [ id "seedInput"
-                , class "form-control"
-                , type_ "number"
-                , value (toString model.seed)
-                , onInput (String.toInt >> Result.withDefault 0 >> UpdateSeed)
+            [ div [ class "form-group row" ]
+                [ label [ for "seedInput", class "col-form-label col-3" ]
+                    [ text "Seed" ]
+                , div [ class "col-9" ]
+                    [ input
+                        [ id "seedInput"
+                        , class "form-control"
+                        , type_ "number"
+                        , value (toString model.seed)
+                        , onInput (String.toInt >> Result.withDefault 0 >> UpdateSeed)
+                        ]
+                        []
+                    ]
                 ]
-                []
-            , button [ class "btn btn-primary", onClick StartGame ]
-                [ text "Start" ]
-            , div []
-                [ label [ for "seedInput", class "col-form-label" ]
-                    [ text ("Moves: " ++ (toString model.numMoves)) ]
+            , div [ class "form-group row" ]
+                [ div [ class "offset-3 col-9" ]
+                    [ div [ class "form-check" ]
+                        [ label [ class "form-check-label" ]
+                            [ input
+                                [ class "form-check-input"
+                                , type_ "checkbox"
+                                , checked (model.invertControls)
+                                , onCheck (InvertControls)
+                                ]
+                                []
+                            , text " Invert Controls"
+                            ]
+                        ]
+                    ]
+                ]
+            , div [ class "form-group row" ]
+                [ div [ class "offset-3 col-9" ]
+                    [ button [ class "btn btn-primary", onClick StartGame ]
+                        [ text "Start" ]
+                    ]
+                ]
+            , div [ class "form-group row" ]
+                [ label [ class "col-form-label col-12" ]
+                    [ text ("Moves " ++ (toString model.numMoves)) ]
                 ]
             ]
         , div [ css.class [ PuzzleCss.Content ] ]

@@ -29,6 +29,9 @@ update msg model =
         UpdateSeed seed ->
             ( Model.updateSeed seed model, Cmd.none )
 
+        InvertControls flag ->
+            ( Model.updateInvertControls flag model, Cmd.none )
+
         HandleKey 37 ->
             ( Model.move Left model, Cmd.none )
 

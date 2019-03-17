@@ -1,26 +1,13 @@
-module Main exposing (init, main, subscriptions, update, view)
+module Main exposing (init)
 
 import Browser
 import Browser.Events as Events
 import GameKeyDecoder exposing (..)
-import Html exposing (..)
+import Html
 import Json.Decode as Decode
 import Model exposing (..)
 import Msg exposing (..)
-
-
-
--- import View exposing (view)
-
-
-view : Model -> Browser.Document Msg
-view model =
-    { title = "Shift Puzzle"
-    , body =
-        [ div []
-            [ text (String.fromInt model.numMoves) ]
-        ]
-    }
+import View exposing (view)
 
 
 main : Program Decode.Value Model Msg
@@ -73,10 +60,6 @@ update msg model =
             update (Msg.UpdateSeed (model.seed - 1)) model
 
         HandleKey (Other key) ->
-            -- let
-            --     _ =
-            --         Debug.log "unmapped key" key
-            -- in
             ( model, Cmd.none )
 
 

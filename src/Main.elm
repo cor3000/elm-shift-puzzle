@@ -18,7 +18,7 @@ view model =
     { title = "Shift Puzzle"
     , body =
         [ div []
-            [ text (Debug.toString model) ]
+            [ text (String.fromInt model.numMoves) ]
         ]
     }
 

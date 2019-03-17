@@ -1,6 +1,6 @@
-module Msg exposing (..)
+module Msg exposing (Msg(..))
 
-import Keyboard exposing (KeyCode)
+import GameKeyDecoder exposing (GameKey)
 
 
 type Msg
@@ -8,4 +8,4 @@ type Msg
     | AbortGame
     | UpdateSeed Int
     | InvertControls Bool
-    | HandleKey KeyCode
+    | HandleKey GameKey

@@ -1,15 +1,31 @@
-module Main exposing (..)
+module Main exposing (init, main, subscriptions, update, view)
 
+import Browser
+import Browser.Events as Events
+import GameKeyDecoder exposing (..)
 import Html exposing (..)
-import Keyboard
-import Msg exposing (..)
+import Json.Decode as Decode
 import Model exposing (..)
-import View exposing (view)
+import Msg exposing (..)
 
 
-main : Program Never Model Msg
+
+-- import View exposing (view)
+
+
+view : Model -> Browser.Document Msg
+view model =
+    { title = "Shift Puzzle"
+    , body =
+        [ div []
+            [ text (Debug.toString model) ]
+        ]
+    }
+
+
+main : Program Decode.Value Model Msg
 main =
-    Html.program
+    Browser.document
         { init = init
         , view = view
         , update = update
@@ -32,45 +48,46 @@ update msg model =
         InvertControls flag ->
             ( Model.updateInvertControls flag model, Cmd.none )
 
-        HandleKey 37 ->
+        HandleKey LeftKey ->
             ( Model.move Left model, Cmd.none )
 
-        HandleKey 38 ->
+        HandleKey UpKey ->
             ( Model.move Up model, Cmd.none )
 
-        HandleKey 39 ->
+        HandleKey RightKey ->
             ( Model.move Right model, Cmd.none )
 
-        HandleKey 40 ->
+        HandleKey DownKey ->
             ( Model.move Down model, Cmd.none )
 
-        HandleKey 13 ->
+        HandleKey StartKey ->
             update Msg.StartGame model
 
-        HandleKey 27 ->
+        HandleKey AbortKey ->
             update Msg.AbortGame model
 
-        HandleKey 33 ->
+        HandleKey IncreaseSeedKey ->
             update (Msg.UpdateSeed (model.seed + 1)) model
 
-        HandleKey 34 ->
+        HandleKey DecreaseSeedKey ->
             update (Msg.UpdateSeed (model.seed - 1)) model
 
-        HandleKey k ->
-            let
-                unused =
-                    Debug.log "unhandled keydown: " k
-            in
-                ( model, Cmd.none )
+        HandleKey (Other key) ->
+            -- let
+            --     _ =
+            --         Debug.log "unmapped key" key
+            -- in
+            ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Keyboard.downs HandleKey
+        [ Events.onKeyDown gameKeyDecoder
+            |> Sub.map HandleKey
         ]
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Decode.Value -> ( Model, Cmd Msg )
+init flags =
     ( Model.init 4 0, Cmd.none )

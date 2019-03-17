@@ -13,7 +13,7 @@ type Direction
 
 toDirection : Int -> Direction
 toDirection num =
-    case (num % 4) of
+    case (modBy 4 num) of
         0 ->
             Right
 
@@ -68,7 +68,7 @@ startGame model =
         |> setGameStatus Shuffling
         |> shuffle 1000
         |> setGameStatus InGame
-        |> (\model -> { model | numMoves = 0 })
+        |> (\m -> { m | numMoves = 0 })
 
 
 setGameStatus : GameStatus -> Model -> Model
@@ -211,10 +211,10 @@ updateMove nextPos model =
 swapPositions : Maybe Cell -> Maybe Cell -> Array Cell -> Maybe (Array Cell)
 swapPositions cell1 cell2 cells =
     Maybe.map2
-        (\cell1 cell2 ->
+        (\c1 c2 ->
             cells
-                |> Array.set cell1.index { cell1 | pos = cell2.pos }
-                |> Array.set cell2.index { cell2 | pos = cell1.pos }
+                |> Array.set c1.index { c1 | pos = c2.pos }
+                |> Array.set c2.index { c2 | pos = c1.pos }
         )
         cell1
         cell2
@@ -233,4 +233,4 @@ cellAtPosition pos model =
 
 toPosition : Int -> Int -> Position
 toPosition size index =
-    ( index % size, index // size )
+    ( modBy size index, index // size )

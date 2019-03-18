@@ -4,23 +4,91 @@ import Array
 import Browser
 import Css exposing (..)
 import Css.Global exposing (global, selector)
+import Css.Transitions exposing (easeOut, transition)
 import Html
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (css, href, src)
+import Html.Styled.Attributes exposing (css, href, src, style)
 import Html.Styled.Events exposing (onClick)
 import Model exposing (..)
 import Msg exposing (..)
 
 
+colors =
+    { navy = hex "#001F3F"
+    , blue = hex "#0074D9"
+    , aqua = hex "#7FDBFF"
+    , teal = hex "#39CCCC"
+    , olive = hex "#3D9970"
+    , green = hex "#2ECC40"
+    , lime = hex "#01FF70"
+    , yellow = hex "#FFDC00"
+    , orange = hex "#FF851B"
+    , red = hex "#FF4136"
+    , maroon = hex "#85144B"
+    , fuchsia = hex "#F012BE"
+    , purple = hex "#B10DC9"
+    , black = hex "#111111"
+    , gray = hex "#AAAAAA"
+    , silver = hex "#DDDDDD"
+    , white = hex "#FFFFFF"
+    }
+
+
 theme =
-    { bgColor = hex "#000030"
-    , fgColor = hex "#904010"
+    { bgColor = colors.navy
+    , fgColor = colors.orange
+    }
+
+
+styles =
+    { puzzlePiece =
+        Css.batch
+            [ display inlineBlock
+            , boxSizing borderBox
+            , position absolute
+            , margin (pct 1)
+            , width (pct 23)
+            , height (pct 23)
+            , fontSize (vmin 13)
+            , lineHeight (vmin 20)
+            , textAlign center
+            , borderRadius (pct 5)
+            , transition
+                [ Css.Transitions.left3 100 0 easeOut
+                , Css.Transitions.top3 100 0 easeOut
+                , Css.Transitions.color3 100 0 easeOut
+                , Css.Transitions.backgroundColor3 100 0 easeOut
+                ]
+            ]
+    , puzzlePieceCorrect =
+        Css.batch
+            [ backgroundColor colors.orange
+            , color colors.yellow
+            ]
+    , puzzlePieceWrong =
+        Css.batch
+            [ backgroundColor colors.gray
+            , color colors.silver
+            ]
+    , puzzlePieceEmpty =
+        Css.batch
+            [ backgroundColor transparent
+            , color colors.gray
+            ]
+    , puzzleField =
+        Css.batch
+            [ display inlineBlock
+            , width (vmin 80)
+            , height (vmin 80)
+            , margin2 zero (px 20)
+            , position relative
+            ]
     }
 
 
 gameField : Model -> Html Msg
 gameField model =
-    div []
+    div [ css [ styles.puzzleField ] ]
         [ text ("Moves: " ++ String.fromInt model.numMoves)
         , div []
             (Array.map (piece model) model.cells |> Array.toList)
@@ -29,20 +97,45 @@ gameField model =
 
 piece : Model -> Cell -> Html Msg
 piece model cell =
-    div []
-        [ text
-            (case cell.part of
-                Number num ->
-                    let
-                        ( x, y ) =
-                            cell.pos
-                    in
-                    String.fromInt num ++ "(" ++ String.fromInt x ++ "," ++ String.fromInt y ++ ")"
+    let
+        scale =
+            100.0 / toFloat model.size
 
-                Empty ->
-                    ""
-            )
-        ]
+        ( x, y ) =
+            cell.pos
+
+        posStyles =
+            Css.batch
+                [ top (pct <| toFloat y * scale)
+                , left (pct <| toFloat x * scale)
+                ]
+
+        statusStyle =
+            if cell.pos == cell.origin then
+                styles.puzzlePieceCorrect
+
+            else
+                styles.puzzlePieceWrong
+
+        cssClasses =
+            [ css [ styles.puzzlePiece ]
+            , css [ posStyles ]
+            , css [ statusStyle ]
+            ]
+    in
+    case cell.part of
+        Number num ->
+            div
+                cssClasses
+                [ text (String.fromInt num) ]
+
+        Empty ->
+            div
+                [ css [ styles.puzzlePiece ]
+                , css [ styles.puzzlePieceEmpty ]
+                , css [ posStyles ]
+                ]
+                [ text "😒" ]
 
 
 view : Model -> Browser.Document Msg

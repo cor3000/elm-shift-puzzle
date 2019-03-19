@@ -26,8 +26,11 @@ update msg model =
         StartGame ->
             ( Model.startGame model, Cmd.none )
 
+        Move direction ->
+            ( Model.move direction model, Cmd.none )
+
         AbortGame ->
-            ( Model.init model.size model.seed, Cmd.none )
+            ( Model.abortGame model, Cmd.none )
 
         UpdateSeed seed ->
             ( Model.updateSeed seed model, Cmd.none )
@@ -35,31 +38,37 @@ update msg model =
         InvertControls flag ->
             ( Model.updateInvertControls flag model, Cmd.none )
 
-        HandleKey LeftKey ->
-            ( Model.move Left model, Cmd.none )
+        HandleKey key ->
+            handleKeys key model
 
-        HandleKey UpKey ->
-            ( Model.move Up model, Cmd.none )
 
-        HandleKey RightKey ->
-            ( Model.move Right model, Cmd.none )
+handleKeys key model =
+    case key of
+        LeftKey ->
+            update (Msg.Move Left) model
 
-        HandleKey DownKey ->
-            ( Model.move Down model, Cmd.none )
+        UpKey ->
+            update (Msg.Move Up) model
 
-        HandleKey StartKey ->
+        RightKey ->
+            update (Msg.Move Right) model
+
+        DownKey ->
+            update (Msg.Move Down) model
+
+        StartKey ->
             update Msg.StartGame model
 
-        HandleKey AbortKey ->
+        AbortKey ->
             update Msg.AbortGame model
 
-        HandleKey IncreaseSeedKey ->
+        IncreaseSeedKey ->
             update (Msg.UpdateSeed (model.seed + 1)) model
 
-        HandleKey DecreaseSeedKey ->
+        DecreaseSeedKey ->
             update (Msg.UpdateSeed (model.seed - 1)) model
 
-        HandleKey (Other key) ->
+        Other _ ->
             ( model, Cmd.none )
 
 

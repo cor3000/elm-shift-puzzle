@@ -1,4 +1,25 @@
-module Model exposing (..)
+module Model exposing
+    ( Cell
+    , CellStatus(..)
+    , Direction(..)
+    , GameStatus(..)
+    , Model
+    , Part(..)
+    , abortGame
+    , cellStatus
+    , init
+    , move
+    , partCellFrom
+    , recalculateGameStatus
+    , setGameStatus
+    , startGame
+    , swapPositions
+    , toDirection
+    , toPosition
+    , updateInvertControls
+    , updateMove
+    , updateSeed
+    )
 
 import Array exposing (Array)
 import Random
@@ -13,7 +34,7 @@ type Direction
 
 toDirection : Int -> Direction
 toDirection num =
-    case (modBy 4 num) of
+    case modBy 4 num of
         0 ->
             Right
 
@@ -25,6 +46,12 @@ toDirection num =
 
         _ ->
             Down
+
+
+type CellStatus
+    = EmptyCell
+    | CorrectPosition
+    | WrongPosition
 
 
 type Part
@@ -68,7 +95,13 @@ startGame model =
         |> setGameStatus Shuffling
         |> shuffle 1000
         |> setGameStatus InGame
-        |> (\m -> { m | numMoves = 0 })
+        |> (\m -> { m | numMoves = 0, invertControls = model.invertControls })
+
+
+abortGame : Model -> Model
+abortGame model =
+    init model.size model.seed
+        |> updateInvertControls model.invertControls
 
 
 setGameStatus : GameStatus -> Model -> Model
@@ -88,17 +121,17 @@ init size seed =
         emptyCell =
             Cell numParts Empty bottomRight bottomRight
     in
-        { cells =
-            Array.initialize numParts identity
-                |> Array.map (partCellFrom size)
-                |> Array.push emptyCell
-        , currentPos = bottomRight
-        , size = size
-        , seed = seed
-        , gameStatus = Initial
-        , numMoves = 0
-        , invertControls = False
-        }
+    { cells =
+        Array.initialize numParts identity
+            |> Array.map (partCellFrom size)
+            |> Array.push emptyCell
+    , currentPos = bottomRight
+    , size = size
+    , seed = seed
+    , gameStatus = Initial
+    , numMoves = 0
+    , invertControls = False
+    }
 
 
 partCellFrom : Int -> Int -> Cell
@@ -107,7 +140,7 @@ partCellFrom size index =
         pos =
             toPosition size index
     in
-        Cell index (Number (index + 1)) pos pos
+    Cell index (Number (index + 1)) pos pos
 
 
 shuffle : Int -> Model -> Model
@@ -121,7 +154,7 @@ shuffle numMoves model =
         ( dirList, nextSeed ) =
             Random.step dirListGenerator (Random.initialSeed model.seed)
     in
-        List.foldl move model dirList
+    List.foldl move model dirList
 
 
 updateSeed : Int -> Model -> Model
@@ -143,6 +176,7 @@ move dir model =
         invertFactor =
             if model.invertControls then
                 -1
+
             else
                 1
 
@@ -161,11 +195,12 @@ move dir model =
                 Right ->
                     ( x + 1 * invertFactor, y )
     in
-        if ((model.gameStatus == InGame || model.gameStatus == Shuffling) && insideField model.size nextPos) then
-            updateMove nextPos model
-                |> recalculateGameStatus
-        else
-            model
+    if (model.gameStatus == InGame || model.gameStatus == Shuffling) && insideField model.size nextPos then
+        updateMove nextPos model
+            |> recalculateGameStatus
+
+    else
+        model
 
 
 recalculateGameStatus : Model -> Model
@@ -179,10 +214,11 @@ recalculateGameStatus model =
                 (init model.size model.seed |> .cells |> Array.toList)
                 |> List.all identity
     in
-        if model.gameStatus == InGame && solved then
-            setGameStatus Solved model
-        else
-            model
+    if model.gameStatus == InGame && solved then
+        setGameStatus Solved model
+
+    else
+        model
 
 
 updateMove : Position -> Model -> Model
@@ -196,16 +232,16 @@ updateMove nextPos model =
         nextCell =
             cellAtPosition nextPos model
     in
-        swapPositions currentCell nextCell model.cells
-            |> Maybe.map
-                (\cells ->
-                    { model
-                        | currentPos = nextPos
-                        , cells = cells
-                        , numMoves = (model.numMoves + 1)
-                    }
-                )
-            |> Maybe.withDefault model
+    swapPositions currentCell nextCell model.cells
+        |> Maybe.map
+            (\cells ->
+                { model
+                    | currentPos = nextPos
+                    , cells = cells
+                    , numMoves = model.numMoves + 1
+                }
+            )
+        |> Maybe.withDefault model
 
 
 swapPositions : Maybe Cell -> Maybe Cell -> Array Cell -> Maybe (Array Cell)
@@ -234,3 +270,17 @@ cellAtPosition pos model =
 toPosition : Int -> Int -> Position
 toPosition size index =
     ( modBy size index, index // size )
+
+
+cellStatus : Cell -> CellStatus
+cellStatus cell =
+    case cell.part of
+        Empty ->
+            EmptyCell
+
+        Number _ ->
+            if cell.pos == cell.origin then
+                CorrectPosition
+
+            else
+                WrongPosition

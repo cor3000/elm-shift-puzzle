@@ -7,8 +7,8 @@ import Css.Global exposing (global, selector)
 import Css.Transitions exposing (easeOut, transition)
 import Html
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (css, href, src, style)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Attributes exposing (checked, class, css, for, href, id, rel, src, style, type_, value)
+import Html.Styled.Events exposing (onCheck, onClick, onInput)
 import Model exposing (..)
 import Msg exposing (..)
 
@@ -40,8 +40,43 @@ theme =
     }
 
 
+globalStyles =
+    [ Html.Styled.node "link" [ rel "stylesheet", href "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" ] []
+    , global
+        [ selector "body"
+            [ backgroundColor theme.bgColor
+            , color theme.fgColor
+            ]
+        ]
+    ]
+
+
 styles =
-    { puzzlePiece =
+    { wrapper =
+        Css.batch
+            [ displayFlex
+            , width (pct 100)
+            ]
+    , sidebar =
+        Css.batch
+            [ display inlineBlock
+            , flex none
+            , width (px 200)
+            ]
+    , content =
+        Css.batch
+            [ flex (int 1)
+            , position relative
+            ]
+    , puzzleField =
+        Css.batch
+            [ display inlineBlock
+            , width (vmin 80)
+            , height (vmin 80)
+            , margin2 zero (px 20)
+            , position relative
+            ]
+    , puzzlePiece =
         Css.batch
             [ display inlineBlock
             , boxSizing borderBox
@@ -75,22 +110,30 @@ styles =
             [ backgroundColor transparent
             , color colors.gray
             ]
-    , puzzleField =
-        Css.batch
-            [ display inlineBlock
-            , width (vmin 80)
-            , height (vmin 80)
-            , margin2 zero (px 20)
-            , position relative
-            ]
+    }
+
+
+view : Model -> Browser.Document Msg
+view model =
+    { title = "Shift Puzzle"
+    , body =
+        List.map toUnstyled
+            (globalStyles
+                ++ [ div [ css [ styles.wrapper ] ]
+                        [ sidebar model
+                        , div [ css [ styles.content ] ]
+                            [ gameField model
+                            ]
+                        ]
+                   ]
+            )
     }
 
 
 gameField : Model -> Html Msg
 gameField model =
     div [ css [ styles.puzzleField ] ]
-        [ text ("Moves: " ++ String.fromInt model.numMoves)
-        , div []
+        [ div []
             (Array.map (piece model) model.cells |> Array.toList)
         ]
 
@@ -104,54 +147,90 @@ piece model cell =
         ( x, y ) =
             cell.pos
 
-        posStyles =
+        positionStyle =
             Css.batch
                 [ top (pct <| toFloat y * scale)
                 , left (pct <| toFloat x * scale)
                 ]
 
         statusStyle =
-            if cell.pos == cell.origin then
-                styles.puzzlePieceCorrect
+            case cellStatus cell of
+                CorrectPosition ->
+                    styles.puzzlePieceCorrect
 
-            else
-                styles.puzzlePieceWrong
+                WrongPosition ->
+                    styles.puzzlePieceWrong
+
+                EmptyCell ->
+                    styles.puzzlePieceEmpty
 
         cssClasses =
             [ css [ styles.puzzlePiece ]
-            , css [ posStyles ]
+            , css [ positionStyle ]
             , css [ statusStyle ]
             ]
     in
     case cell.part of
         Number num ->
-            div
-                cssClasses
-                [ text (String.fromInt num) ]
+            div cssClasses [ text (String.fromInt num) ]
 
         Empty ->
-            div
-                [ css [ styles.puzzlePiece ]
-                , css [ styles.puzzlePieceEmpty ]
-                , css [ posStyles ]
+            div cssClasses
+                [ text
+                    (case model.gameStatus of
+                        InGame ->
+                            "😒"
+
+                        _ ->
+                            "😀"
+                    )
                 ]
-                [ text "😒" ]
 
 
-view : Model -> Browser.Document Msg
-view model =
-    { title = "Shift Puzzle"
-    , body =
-        List.map toUnstyled
-            [ global
-                [ selector "body"
-                    [ backgroundColor theme.bgColor
-                    , color theme.fgColor
+sidebar : Model -> Html Msg
+sidebar model =
+    div [ css [ styles.sidebar ] ]
+        [ div [ class "form-group row" ]
+            [ label [ for "seedInput", class "col-form-label col-3" ]
+                [ text "Seed" ]
+            , div [ class "col-9" ]
+                [ input
+                    [ id "seedInput"
+                    , class "form-control"
+                    , type_ "number"
+                    , value (String.fromInt model.seed)
+                    , onInput (String.toInt >> Maybe.withDefault 0 >> UpdateSeed)
+                    ]
+                    []
+                ]
+            ]
+        , div [ class "form-group row" ]
+            [ div [ class "offset-3 col-9" ]
+                [ div [ class "form-check" ]
+                    [ label [ class "form-check-label" ]
+                        [ input
+                            [ class "form-check-input"
+                            , type_ "checkbox"
+                            , checked model.invertControls
+                            , onCheck InvertControls
+                            ]
+                            []
+                        , text " Invert Controls"
+                        ]
                     ]
                 ]
-            , gameField model
             ]
-    }
+        , div [ class "form-group row" ]
+            [ div [ class "offset-3 col-9" ]
+                [ button [ class "btn btn-primary", onClick StartGame ]
+                    [ text "Start" ]
+                ]
+            ]
+        , div [ class "form-group row" ]
+            [ label [ class "col-form-label col-12" ]
+                [ text ("Moves " ++ String.fromInt model.numMoves) ]
+            ]
+        ]
 
 
 
@@ -222,40 +301,6 @@ view model =
 --                 (Array.map (cell model) model.cells |> Array.toList)
 --             ]
 --         ]
--- piece : Model -> Cell -> Html Msg
--- piece model cell =
---     let
---         scale =
---             100.0 / toFloat model.size
---         ( x, y ) =
---             cell.pos
---         posStyles =
---             styles
---                 [ Css.top (Css.pct <| toFloat y * scale)
---                 , Css.left (Css.pct <| toFloat x * scale)
---                 ]
---     in
---     case cell.part of
---         Number num ->
---             div
---                 [ posStyles
---                 , css.classList
---                     [ ( PuzzleCss.Cell, True )
---                     , ( PuzzleCss.CellCorrect, cell.pos == cell.origin )
---                     ]
---                 ]
---                 [ text (toString num) ]
---         Empty ->
---             div
---                 [ posStyles
---                 , css.class [ PuzzleCss.Cell, PuzzleCss.CellEmpty ]
---                 ]
---                 [ text <|
---                     if model.gameStatus == InGame then
---                         "😒"
---                     else
---                         "😀"
---                 ]
 -- styles : List Css.Style -> Html.Attribute msg
 -- styles =
 --     Css.asPairs >> style

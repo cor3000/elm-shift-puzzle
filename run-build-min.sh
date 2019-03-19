@@ -4,7 +4,7 @@ set -e
 
 src=src/Main.elm
 out=build/main.js
-min=build/elm.min.js
+min=build/main.min.js
 
 elm make --optimize --output=$out $src
 

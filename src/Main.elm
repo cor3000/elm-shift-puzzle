@@ -3,9 +3,8 @@ module Main exposing (init)
 import Browser
 import Browser.Events as Events
 import GameKeyDecoder exposing (..)
-import Html
 import Json.Decode as Decode
-import Model exposing (..)
+import Model exposing (Direction(..), Model)
 import Msg exposing (..)
 import View exposing (view)
 

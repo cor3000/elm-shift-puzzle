@@ -9,15 +9,8 @@ module Model exposing
     , cellStatus
     , init
     , move
-    , partCellFrom
-    , recalculateGameStatus
-    , setGameStatus
     , startGame
-    , swapPositions
-    , toDirection
-    , toPosition
     , updateInvertControls
-    , updateMove
     , updateSeed
     )
 

@@ -1,7 +1,7 @@
 module Msg exposing (Msg(..))
 
-import GameKeyDecoder exposing (GameKey)
-import Model exposing (Direction)
+import GameKeyDecoder
+import Model
 
 
 type Msg
@@ -9,5 +9,5 @@ type Msg
     | AbortGame
     | UpdateSeed Int
     | InvertControls Bool
-    | Move Direction
-    | HandleKey GameKey
+    | Move Model.Direction
+    | HandleKey GameKeyDecoder.GameKey
